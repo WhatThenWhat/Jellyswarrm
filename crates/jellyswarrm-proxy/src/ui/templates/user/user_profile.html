@@ -1,18 +1,98 @@
-User Profile
-Manage your account settings
-Profile Information
-Username {{ username }}
-{% if oidc_enabled %}
-Single Sign-On
-{% if sso_linked %}
-Single sign-on is linked. Use "Sign in with SSO" next time.
-Only link again if you were asked to. Linking again replaces the current link.
-Link again
-{% else %}
-Link your single sign-on account to sign in to this dashboard without your password.
-Link single sign-on
-{% endif %}
-{% endif %}
-Change Password
+<hgroup>
+    <h1>User Profile</h1>
+    <h2>Manage your account settings</h2>
+</hgroup>
 
-Current Password {% let pw_input_name = "current_password" %} {% let pw_input_placeholder = "Current password" %} {% let pw_input_autocomplete = "current-password" %} {% let pw_input_required = false %} {% include "components/password_input.html" %} New Password {% let pw_input_name = "new_password" %} {% let pw_input_placeholder = "New password" %} {% let pw_input_autocomplete = "new-password" %} {% let pw_input_required = false %} {% include "components/password_input.html" %} Confirm New Password {% let pw_input_name = "confirm_password" %} {% let pw_input_placeholder = "Confirm new password" %} {% let pw_input_autocomplete = "new-password" %} {% let pw_input_required = false %} {% include "components/password_input.html" %} Update Password
+<article>
+    <header>
+        <strong>Profile Information</strong>
+    </header>
+    <div class="grid">
+        <div>
+            <label>
+                Username
+                <input type="text" value="{{ username }}" readonly>
+            </label>
+        </div>
+    </div>
+</article>
+
+{% if oidc_enabled %}
+<article>
+    <header>
+        <strong>Single Sign-On</strong>
+    </header>
+    {% if sso_linked %}
+    <p style="color: #2e7d32; font-weight: 600;">
+        <i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>
+        Single sign-on is linked. Use "Sign in with SSO" next time.
+    </p>
+    <p style="color: var(--pico-muted-color);">
+        Only link again if you were asked to. Linking again replaces the current link.
+    </p>
+    <form method="post" action="/{{ ui_route }}/oidc/link">
+        <button type="submit" class="secondary outline">
+            <i class="fas fa-key" style="margin-right: 0.5rem;"></i>
+            Link again
+        </button>
+    </form>
+    {% else %}
+    <p style="color: var(--pico-muted-color);">
+        Link your single sign-on account to sign in to this dashboard without your password.
+    </p>
+    <form method="post" action="/{{ ui_route }}/oidc/link">
+        <button type="submit" class="secondary">
+            <i class="fas fa-key" style="margin-right: 0.5rem;"></i>
+            Link single sign-on
+        </button>
+    </form>
+    {% endif %}
+</article>
+{% endif %}
+
+<article>
+    <header>
+        <strong>Change Password</strong>
+    </header>
+    
+    <form id="password_form" 
+          hx-post="/{{ ui_route }}/user/profile/password" 
+          hx-target="#password_message" 
+          hx-swap="innerHTML"
+          hx-indicator="#password-loading">
+          
+        <div id="password_message" style="margin-bottom: 1rem;"></div>
+        
+        <label>
+            Current Password
+            {% let pw_input_name = "current_password" %}
+            {% let pw_input_placeholder = "Current password" %}
+            {% let pw_input_autocomplete = "current-password" %}
+            {% let pw_input_required = false %}
+            {% include "components/password_input.html" %}
+        </label>
+        <label>
+            New Password
+            {% let pw_input_name = "new_password" %}
+            {% let pw_input_placeholder = "New password" %}
+            {% let pw_input_autocomplete = "new-password" %}
+            {% let pw_input_required = false %}
+            {% include "components/password_input.html" %}
+        </label>
+        <label>
+            Confirm New Password
+            {% let pw_input_name = "confirm_password" %}
+            {% let pw_input_placeholder = "Confirm new password" %}
+            {% let pw_input_autocomplete = "new-password" %}
+            {% let pw_input_required = false %}
+            {% include "components/password_input.html" %}
+        </label>
+        
+        <button type="submit">
+            Update Password
+            <span id="password-loading" class="htmx-indicator" style="margin-left: 0.5rem;">
+                <i class="fas fa-circle-notch fa-spin"></i>
+            </span>
+        </button>
+    </form>
+</article>
