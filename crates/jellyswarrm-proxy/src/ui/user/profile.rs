@@ -16,6 +16,7 @@ pub struct UserProfileTemplate {
     pub username: String,
     pub ui_route: String,
     pub oidc_enabled: bool,
+    pub sso_linked: bool,
 }
 
 #[derive(Deserialize)]
@@ -29,10 +30,18 @@ pub async fn get_user_profile(
     State(state): State<AppState>,
     AuthenticatedUser(user): AuthenticatedUser,
 ) -> impl IntoResponse {
+    let sso_linked = match state.user_authorization.has_oidc_identity(&user.id).await {
+        Ok(linked) => linked,
+        Err(e) => {
+            error!("Failed to read single sign-on link for {}: {}", user.username, e);
+            false
+        }
+    };
     let template = UserProfileTemplate {
         username: user.username,
         ui_route: state.get_ui_route().await,
         oidc_enabled: state.config.read().await.oidc.is_some(),
+        sso_linked,
     };
 
     match template.render() {

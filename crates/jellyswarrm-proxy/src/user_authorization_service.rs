@@ -711,6 +711,16 @@ impl UserAuthorizationService {
             .await
     }
 
+    /// Whether the user has any OpenID Connect identity linked.
+    pub async fn has_oidc_identity(&self, user_id: &str) -> Result<bool, sqlx::Error> {
+        let count: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM oidc_identities WHERE user_id = ?")
+                .bind(user_id)
+                .fetch_one(&self.pool)
+                .await?;
+        Ok(count > 0)
+    }
+
     /// Link an OpenID Connect identity to a user, replacing the user's
     /// previous link for the same issuer. Fails with a unique violation when
     /// the identity is already linked to another user.
